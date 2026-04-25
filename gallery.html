@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30 Painters, One Muse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #f7f4ef;
+    --ink: #1a1814;
+    --muted: #7a7570;
+    --border: #e0dbd4;
+    --accent: #c8a97e;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Jost', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── PAGE TRANSITIONS ─── */
+  .page {
+    position: fixed; inset: 0;
+    overflow-y: auto;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+    background: var(--cream);
+  }
+  .page.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ─── HOMEPAGE ─── */
+  #home-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .home-header {
+    text-align: center;
+    padding: 10vh 2rem 6vh;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .home-header .eyebrow {
+    font-family: var(--sans);
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .home-header h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin-bottom: 1.4rem;
+  }
+
+  .home-header h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .home-header .tagline {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(0.95rem, 2.2vw, 1.15rem);
+    color: var(--muted);
+    max-width: 420px;
+    margin: 0 auto;
+    line-height: 1.65;
+  }
+
+  .home-header .divider {
+    width: 40px;
+    height: 1px;
+    background: var(--accent);
+    margin: 2rem auto 0;
+  }
+
+  /* ─── GALLERY GRID ─── */
+  .gallery-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 5vh 2rem 10vh;
+  }
+
+  .era-group { margin-bottom: 4rem; }
+
+  .era-label {
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .artists-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 2px;
+  }
+
+  .artist-card {
+    padding: 1.4rem 1.6rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: border-color 0.3s ease, background 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .artist-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 1.6rem; right: 1.6rem;
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  .artist-card:hover {
+    background: #f0ece5;
+    border-color: var(--border);
+  }
+
+  .artist-card:hover::after {
+    transform: scaleX(1);
+  }
+
+  .artist-card:hover .card-name {
+    color: var(--accent);
+  }
+
+  .card-number {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    font-family: var(--sans);
+  }
+
+  .card-name {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    transition: color 0.3s ease;
+    line-height: 1.3;
+  }
+
+  .card-era {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    margin-top: 0.3rem;
+    font-family: var(--sans);
+  }
+
+  /* ─── ARTIST PAGE ─── */
+  #artist-page { min-height: 100vh; }
+
+  .artist-nav {
+    padding: 1.8rem 3rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .back-btn {
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+  }
+
+  .back-btn:hover { color: var(--ink); }
+
+  .back-btn .arrow { font-size: 14px; }
+
+  .nav-artist-name {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  .artist-body {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 7vh 3rem 10vh;
+  }
+
+  .artist-meta {
+    margin-bottom: 5vh;
+  }
+
+  .artist-era-tag {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .artist-full-name {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+
+  .artist-full-name em {
+    font-style: italic;
+  }
+
+  /* ─── QUOTE SECTION ─── */
+  .quote-section {
+    margin: 6vh 0;
+    padding: 4vh 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .quote-mark {
+    font-family: var(--serif);
+    font-size: 7rem;
+    line-height: 0.6;
+    color: var(--accent);
+    opacity: 0.35;
+    position: absolute;
+    top: 3vh;
+    left: -1rem;
+    pointer-events: none;
+    select: none;
+  }
+
+  .quote-text {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+    line-height: 1.75;
+    font-weight: 300;
+    color: var(--ink);
+    padding-left: 2rem;
+    max-width: 680px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .quote-attribution {
+    margin-top: 1.8rem;
+    padding-left: 2rem;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ─── PAINTINGS ─── */
+  .paintings-section { margin-top: 6vh; }
+
+  .paintings-heading {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .paintings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .painting-item { cursor: pointer; }
+
+  .painting-img-wrap {
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    background: #e8e4de;
+    position: relative;
+  }
+
+  .painting-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s ease, filter 0.4s ease;
+    filter: saturate(0.9) brightness(0.96);
+    display: block;
+  }
+
+  .painting-item:hover .painting-img-wrap img {
+    transform: scale(1.04);
+    filter: saturate(1.05) brightness(1);
+  }
+
+  .painting-caption {
+    margin-top: 0.75rem;
+  }
+
+  .painting-title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .painting-year {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-top: 0.2rem;
+  }
+
+  /* ─── FOOTER ─── */
+  .home-footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ─── LIGHTBOX ─── */
+  .lightbox {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(26,24,20,0.92);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+    padding: 2rem;
+  }
+
+  .lightbox.open { opacity: 1; pointer-events: all; }
+
+  .lightbox img {
+    max-width: 80vw;
+    max-height: 85vh;
+    object-fit: contain;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+
+  .lightbox-close {
+    position: absolute; top: 2rem; right: 2rem;
+    color: #fff; font-size: 1.5rem;
+    cursor: pointer; opacity: 0.6;
+    background: none; border: none;
+    transition: opacity 0.2s;
+    font-family: var(--sans); font-weight: 300;
+  }
+
+  .lightbox-close:hover { opacity: 1; }
+
+  .lightbox-caption {
+    position: absolute; bottom: 2rem; left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.55);
+    font-family: var(--serif); font-style: italic;
+    font-size: 0.9rem; text-align: center;
+    white-space: nowrap;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 640px) {
+    .artist-nav { padding: 1.2rem 1.5rem; }
+    .artist-body { padding: 5vh 1.5rem 8vh; }
+    .quote-mark { font-size: 5rem; left: -0.5rem; }
+    .quote-text { padding-left: 1rem; }
+    .quote-attribution { padding-left: 1rem; }
+    .paintings-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .home-header { padding: 7vh 1.5rem 4vh; }
+    .gallery-container { padding: 3vh 1.5rem 8vh; }
+  }
+
+  /* ─── FADE-IN ANIMATION ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up { animation: fadeUp 0.7s ease forwards; opacity: 0; }
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.22s; }
+  .delay-3 { animation-delay: 0.34s; }
+  .delay-4 { animation-delay: 0.46s; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HOME PAGE ═══════════════ -->
+<div id="home-page" class="page active">
+  <div class="home-header">
+    <p class="eyebrow">A Digital Exhibition</p>
+    <h1>30 Painters,<br><em>One Muse</em></h1>
+    <p class="tagline">Thirty voices across five centuries, each quietly undone by the same presence.</p>
+    <div class="divider"></div>
+  </div>
+
+  <div class="gallery-container" id="gallery-container"></div>
+
+  <div class="home-footer">A curated digital gallery &nbsp;·&nbsp; 2026</div>
+</div>
+
+<!-- ═══════════════ ARTIST PAGE ═══════════════ -->
+<div id="artist-page" class="page">
+  <nav class="artist-nav">
+    <button class="back-btn" onclick="goHome()">
+      <span class="arrow">←</span> Back to Gallery
+    </button>
+    <span class="nav-artist-name" id="nav-name"></span>
+  </nav>
+
+  <div class="artist-body">
+    <div class="artist-meta fade-up">
+      <div class="artist-era-tag" id="detail-era"></div>
+      <h2 class="artist-full-name" id="detail-name"></h2>
+    </div>
+
+    <div class="quote-section fade-up delay-2">
+      <div class="quote-mark">"</div>
+      <blockquote class="quote-text" id="detail-quote"></blockquote>
+      <p class="quote-attribution" id="detail-attr"></p>
+    </div>
+
+    <div class="paintings-section fade-up delay-3">
+      <p class="paintings-heading">Selected Works</p>
+      <div class="paintings-grid" id="detail-paintings"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ LIGHTBOX ═══════════════ -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+  <p class="lightbox-caption" id="lightbox-caption"></p>
+</div>
+
+<script>
+const DATA = [
+  {
+    name: "Leonardo da Vinci", era: "Renaissance",
+    quote: "There is a geometry in her joy — the way amusement curves her face follows the same law that governs rivers and shells. I would need a hundred studies merely to understand the corner of that smile.",
+    paintings: [
+      { title: "Mona Lisa", year: "c. 1503–1519", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/800px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg" },
+      { title: "Lady with an Ermine", year: "c. 1489–1490", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Lady_with_an_Ermine_-_Leonardo_da_Vinci_-_Google_Art_Project.jpg/800px-Lady_with_an_Ermine_-_Leonardo_da_Vinci_-_Google_Art_Project.jpg" },
+      { title: "The Virgin of the Rocks", year: "c. 1483–1486", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Leonardo_da_Vinci_-_Virgin_of_the_Rocks_%28Louvre%29.jpg/800px-Leonardo_da_Vinci_-_Virgin_of_the_Rocks_%28Louvre%29.jpg" },
+      { title: "St. John the Baptist", year: "c. 1513–1516", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Leonardo_da_Vinci_-_Saint_John_the_Baptist_C2RMF_retouched.jpg/600px-Leonardo_da_Vinci_-_Saint_John_the_Baptist_C2RMF_retouched.jpg" }
+    ]
+  },
+  {
+    name: "Sandro Botticelli", era: "Renaissance",
+    quote: "Grace does not announce itself, and yet here it unmistakably is. She moves as though the air parts for her not out of courtesy but out of love.",
+    paintings: [
+      { title: "The Birth of Venus", year: "c. 1484–1486", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg/1280px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg" },
+      { title: "Primavera", year: "c. 1477–1482", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Botticelli-primavera.jpg/1280px-Botticelli-primavera.jpg" },
+      { title: "Portrait of a Young Woman", year: "c. 1480", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Botticelli_Portrait_of_a_young_woman.jpg/600px-Botticelli_Portrait_of_a_young_woman.jpg" },
+      { title: "Madonna of the Magnificat", year: "c. 1481", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Botticelli_-_Madonna_del_Magnificat_%28detail%29.jpg/600px-Botticelli_-_Madonna_del_Magnificat_%28detail%29.jpg" }
+    ]
+  },
+  {
+    name: "Raphael", era: "Renaissance",
+    quote: "I have painted Madonnas for popes, and still I am unprepared for this. Her warmth is not performance — it rises from her like heat from sun-warmed stone.",
+    paintings: [
+      { title: "The School of Athens", year: "1509–1511", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/%22The_School_of_Athens%22_by_Raffaello_Sanzio_da_Urbino.jpg/1280px-%22The_School_of_Athens%22_by_Raffaello_Sanzio_da_Urbino.jpg" },
+      { title: "Sistine Madonna", year: "1512", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Raphael_Sixtine.jpg/800px-Raphael_Sixtine.jpg" },
+      { title: "Portrait of a Young Woman", year: "c. 1507", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Raphael_-_Portrait_of_a_Young_Woman_%28La_Muta%29.jpg/600px-Raphael_-_Portrait_of_a_Young_Woman_%28La_Muta%29.jpg" },
+      { title: "The Transfiguration", year: "1516–1520", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Transfiguration_Raphael.jpg/600px-Transfiguration_Raphael.jpg" }
+    ]
+  },
+  {
+    name: "Titian", era: "Renaissance",
+    quote: "The monochrome cannot contain her — I keep imagining the warm earthen undertones beneath this silver light. My fingers itch for burnt sienna, for ochre, for life.",
+    paintings: [
+      { title: "Venus of Urbino", year: "1538", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Tiziano_-_Venere_di_Urbino_-_Google_Art_Project.jpg/1280px-Tiziano_-_Venere_di_Urbino_-_Google_Art_Project.jpg" },
+      { title: "Assumption of the Virgin", year: "1516–1518", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Tizian_041.jpg/600px-Tizian_041.jpg" },
+      { title: "Portrait of a Man", year: "c. 1512", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Titian_-_Portrait_of_a_Man_-_National_Gallery.jpg/600px-Titian_-_Portrait_of_a_Man_-_National_Gallery.jpg" },
+      { title: "Bacchus and Ariadne", year: "1520–1523", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Tizian_Baccus_and_Ariadne.jpg/1280px-Tizian_Baccus_and_Ariadne.jpg" }
+    ]
+  },
+  {
+    name: "Michelangelo", era: "Renaissance",
+    quote: "I carve figures from marble because the form already lives inside the stone. In her face I see the same: something inevitable, already complete.",
+    paintings: [
+      { title: "Creation of Adam (detail)", year: "1508–1512", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg/1280px-Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg" },
+      { title: "The Last Judgement", year: "1536–1541", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Last_Judgement_%28Michelangelo%29.jpg/600px-Last_Judgement_%28Michelangelo%29.jpg" },
+      { title: "Doni Tondo", year: "c. 1506–1508", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Michelangelo_Buonarroti_-_Tondo_Doni_-_Google_Art_Project.jpg/600px-Michelangelo_Buonarroti_-_Tondo_Doni_-_Google_Art_Project.jpg" },
+      { title: "Delphic Sibyl", year: "1508–1512", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/DelphicSibylByMichelangelo.jpg/600px-DelphicSibylByMichelangelo.jpg" }
+    ]
+  },
+  {
+    name: "Jan van Eyck", era: "Renaissance",
+    quote: "Every surface holds information if you know how to look. The way fabric drapes at her shoulder, the pearl catching light at her ear — she is a whole world in miniature.",
+    paintings: [
+      { title: "The Arnolfini Portrait", year: "1434", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Van_Eyck_-_Arnolfini_Portrait.jpg/800px-Van_Eyck_-_Arnolfini_Portrait.jpg" },
+      { title: "Ghent Altarpiece", year: "1432", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Van_Eyck_-_Ghent_Altarpiece_-_God_Almighty.jpg/600px-Van_Eyck_-_Ghent_Altarpiece_-_God_Almighty.jpg" },
+      { title: "Portrait of a Man", year: "1433", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Van_Eyck_-_Portrait_of_a_Man_-_WGA7600.jpg/600px-Van_Eyck_-_Portrait_of_a_Man_-_WGA7600.jpg" },
+      { title: "Madonna of Chancellor Rolin", year: "c. 1435", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Jan_van_Eyck_-_The_Virgin_of_Chancellor_Rolin.jpg/800px-Jan_van_Eyck_-_The_Virgin_of_Chancellor_Rolin.jpg" }
+    ]
+  },
+  {
+    name: "Caravaggio", era: "Baroque",
+    quote: "I am a painter of shadows, and yet she defeats me. There is a brightness in her bearing that has nothing to do with the light source. I cannot explain it. I only feel it.",
+    paintings: [
+      { title: "The Calling of Saint Matthew", year: "1599–1600", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/The_Calling_of_Saint_Matthew-Caravaggo_%281599-1600%29.jpg/1280px-The_Calling_of_Saint_Matthew-Caravaggo_%281599-1600%29.jpg" },
+      { title: "Judith Beheading Holofernes", year: "c. 1598–1599", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Caravaggio_-_Judith_Beheading_Holofernes_-_Rome%2C_Galleria_Nazionale_d%27Arte_Antica.jpg/800px-Caravaggio_-_Judith_Beheading_Holofernes_-_Rome%2C_Galleria_Nazionale_d%27Arte_Antica.jpg" },
+      { title: "Supper at Emmaus", year: "1601", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/The_Supper_at_Emmaus_-_Caravaggio_%281601%29.jpg/1280px-The_Supper_at_Emmaus_-_Caravaggio_%281601%29.jpg" },
+      { title: "The Musicians", year: "c. 1595", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Caravaggio_-_The_Musicians.jpg/1280px-Caravaggio_-_The_Musicians.jpg" }
+    ]
+  },
+  {
+    name: "Rembrandt van Rijn", era: "Baroque",
+    quote: "All my life I have painted the interior weather of faces, and hers is extraordinary — there is laughter in it, but also a private depth she shares with no one. I want to understand that.",
+    paintings: [
+      { title: "The Night Watch", year: "1642", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/The_Night_Watch_-_HD.jpg/1280px-The_Night_Watch_-_HD.jpg" },
+      { title: "Self-Portrait with Two Circles", year: "c. 1665–1669", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Rembrandt_van_Rijn_-_Self-Portrait_with_Two_Circles_c.1665-9.jpg/600px-Rembrandt_van_Rijn_-_Self-Portrait_with_Two_Circles_c.1665-9.jpg" },
+      { title: "The Jewish Bride", year: "c. 1665–1669", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Rembrandt_Harmensz._van_Rijn_-_The_Jewish_Bride_-_Google_Art_Project.jpg/1280px-Rembrandt_Harmensz._van_Rijn_-_The_Jewish_Bride_-_Google_Art_Project.jpg" },
+      { title: "Bathsheba at Her Bath", year: "1654", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Rembrandt_van_Rijn-_Bathsheba_at_Her_Bath_-_WGA19059.jpg/600px-Rembrandt_van_Rijn-_Bathsheba_at_Her_Bath_-_WGA19059.jpg" }
+    ]
+  },
+  {
+    name: "Johannes Vermeer", era: "Baroque",
+    quote: "I work in quiet rooms, in still light. But she carries a quality of presence that makes a room feel inhabited the moment she enters. I would have to repaint everything.",
+    paintings: [
+      { title: "Girl with a Pearl Earring", year: "c. 1665", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/1665_Girl_with_a_Pearl_Earring.jpg/800px-1665_Girl_with_a_Pearl_Earring.jpg" },
+      { title: "The Milkmaid", year: "c. 1657–1658", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Johannes_Vermeer_-_Het_melkmeisje_-_Google_Art_Project.jpg/800px-Johannes_Vermeer_-_Het_melkmeisje_-_Google_Art_Project.jpg" },
+      { title: "Woman Reading a Letter", year: "c. 1663", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Jan_Vermeer_van_Delft_-_Woman_Reading_a_Letter_-_WGA24656.jpg/600px-Jan_Vermeer_van_Delft_-_Woman_Reading_a_Letter_-_WGA24656.jpg" },
+      { title: "The Art of Painting", year: "c. 1666–1668", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Jan_Vermeer_-_The_Art_of_Painting_-_Google_Art_Project.jpg/800px-Jan_Vermeer_-_The_Art_of_Painting_-_Google_Art_Project.jpg" }
+    ]
+  },
+  {
+    name: "Peter Paul Rubens", era: "Baroque",
+    quote: "There is an ease to her that cannot be taught or cultivated. Confidence like hers is not borrowed from occasion — it lives in the body permanently.",
+    paintings: [
+      { title: "The Three Graces", year: "c. 1635", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/The_Three_Graces%2C_by_Peter_Paul_Rubens%2C_from_Prado_in_Google_Earth.jpg/800px-The_Three_Graces%2C_by_Peter_Paul_Rubens%2C_from_Prado_in_Google_Earth.jpg" },
+      { title: "The Descent from the Cross", year: "1612–1614", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Rubens_-_Descent_from_the_Cross.jpg/600px-Rubens_-_Descent_from_the_Cross.jpg" },
+      { title: "Self Portrait", year: "c. 1623", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Rubens_self_portrait.jpg/600px-Rubens_self_portrait.jpg" },
+      { title: "The Rape of the Daughters of Leucippus", year: "c. 1617–1618", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Rape_of_the_Daughters_of_Leucippus.jpg/800px-Rape_of_the_Daughters_of_Leucippus.jpg" }
+    ]
+  },
+  {
+    name: "Francisco Goya", era: "Baroque",
+    quote: "I have painted queens and courtesans and I will say plainly: she is more interesting than any of them. There is something unguarded about her, something real.",
+    paintings: [
+      { title: "The Third of May 1808", year: "1814", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/El_Tres_de_Mayo%2C_by_Francisco_de_Goya%2C_from_Prado_thin_black_margin.jpg/1280px-El_Tres_de Mayo%2C_by_Francisco_de_Goya%2C_from_Prado_thin_black_margin.jpg" },
+      { title: "Saturn Devouring His Son", year: "1820–1823", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Francisco_de_Goya%2C_Saturno_devorando_a_su_hijo_%281819-1823%29.jpg/800px-Francisco_de_Goya%2C_Saturno_devorando_a_su_hijo_%281819-1823%29.jpg" },
+      { title: "The Clothed Maja", year: "c. 1800–1803", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Francisco_de_Goya_y_Lucientes_-_Clothed_Maja_-_WGA10065.jpg/1280px-Francisco_de_Goya_y_Lucientes_-_Clothed_Maja_-_WGA10065.jpg" },
+      { title: "Self-Portrait", year: "1815", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Francisco_Goya%2C_Self-portrait_%281815%2C_detail%29.jpg/600px-Francisco_Goya%2C_Self-portrait_%281815%2C_detail%29.jpg" }
+    ]
+  },
+  {
+    name: "Eugène Delacroix", era: "Romantic",
+    quote: "Every painting is an argument about color and motion. She makes the argument without trying — the wind in her hair, that forward lean. She is already in movement even standing still.",
+    paintings: [
+      { title: "Liberty Leading the People", year: "1830", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Eug%C3%A8ne_Delacroix_-_Le_28_Juillet._La_Libert%C3%A9_guidant_le_peuple.jpg/1280px-Eug%C3%A8ne_Delacroix_-_Le_28_Juillet._La_Libert%C3%A9_guidant_le_peuple.jpg" },
+      { title: "Death of Sardanapalus", year: "1827", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Delacroix_-_La_Mort_de_Sardanapale%2C_1827.jpg/1280px-Delacroix_-_La_Mort_de_Sardanapale%2C_1827.jpg" },
+      { title: "Women of Algiers", year: "1834", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Eug%C3%A8ne_Delacroix_-_Women_of_Algiers_%28Version%27A%27%29_-_WGA06214.jpg/1280px-Eug%C3%A8ne_Delacroix_-_Women_of_Algiers_%28Version%27A%27%29_-_WGA06214.jpg" },
+      { title: "The Barque of Dante", year: "1822", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Delacroix_-_Barque_de_Dante.jpg/1280px-Delacroix_-_Barque_de_Dante.jpg" }
+    ]
+  },
+  {
+    name: "Caspar David Friedrich", era: "Romantic",
+    quote: "My figures always face away from me, contemplating the infinite. She faces toward — fully present, fully here. That is its own kind of sublime.",
+    paintings: [
+      { title: "Wanderer Above the Sea of Fog", year: "c. 1818", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg/800px-Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg" },
+      { title: "The Sea of Ice", year: "1823–1824", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Caspar_David_Friedrich_-_Das_Eismeer_-_Kunsthalle_Hamburg.jpg/1280px-Caspar_David_Friedrich_-_Das_Eismeer_-_Kunsthalle_Hamburg.jpg" },
+      { title: "Monk by the Sea", year: "1808–1810", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Caspar_David_Friedrich_-_Der_M%C3%B6nch_am_Meer_-_Google_Art_Project.jpg/1280px-Caspar_David_Friedrich_-_Der_M%C3%B6nch_am_Meer_-_Google_Art_Project.jpg" },
+      { title: "Two Men Contemplating the Moon", year: "1825–1830", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Caspar_David_Friedrich_-_Two_Men_Contemplating_the_Moon_-_WGA8278.jpg/800px-Caspar_David_Friedrich_-_Two_Men_Contemplating_the_Moon_-_WGA8278.jpg" }
+    ]
+  },
+  {
+    name: "William Turner", era: "Romantic",
+    quote: "Light is all I have ever painted. What I see in her is a quality of that — not luminance, exactly, but an atmosphere. A weather that is hers alone.",
+    paintings: [
+      { title: "The Fighting Temeraire", year: "1839", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Turner_-_The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg/1280px-Turner_-_The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg" },
+      { title: "Rain, Steam and Speed", year: "1844", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Rain%2C_Steam_and_Speed_the_Great_Western_Railway.jpg/1280px-Rain%2C_Steam_and_Speed_the_Great_Western_Railway.jpg" },
+      { title: "Norham Castle, Sunrise", year: "c. 1845", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Turner_-_Norham_Castle%2C_Sunrise.jpg/1280px-Turner_-_Norham_Castle%2C_Sunrise.jpg" },
+      { title: "Slave Ship", year: "1840", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Slave-ship.jpg/1280px-Slave-ship.jpg" }
+    ]
+  },
+  {
+    name: "Gustave Courbet", era: "Romantic",
+    quote: "Realism is not the absence of beauty — it is beauty with its shoes on. Here is exactly that. Nothing performed, nothing borrowed. This is a person being fully herself.",
+    paintings: [
+      { title: "The Stone Breakers", year: "1849", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Courbet_-_Les_Casseurs_de_Pierres.jpg/1280px-Courbet_-_Les_Casseurs_de_Pierres.jpg" },
+      { title: "A Burial at Ornans", year: "1849–1850", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Gustave_Courbet_-_Un_enterrement_%C3%A0_Ornans_-_2006_09_17.jpg/1280px-Gustave_Courbet_-_Un_enterrement_%C3%A0_Ornans_-_2006_09_17.jpg" },
+      { title: "The Painter's Studio", year: "1854–1855", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Courbet_LAtelier_du_peintre.jpg/1280px-Courbet_LAtelier_du_peintre.jpg" },
+      { title: "The Desperate Man", year: "c. 1844–1845", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Gustave_Courbet_-_Le_Desespere.jpg/600px-Gustave_Courbet_-_Le_Desespere.jpg" }
+    ]
+  },
+  {
+    name: "Édouard Manet", era: "Impressionist",
+    quote: "Flat planes of light and a gaze that meets you honestly — that is all a portrait requires, and she gives both freely. She needs no mythology around her.",
+    paintings: [
+      { title: "Olympia", year: "1863", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Edouard_Manet_-_Olympia_-_Google_Art_Project_3.jpg/1280px-Edouard_Manet_-_Olympia_-_Google_Art_Project_3.jpg" },
+      { title: "Le Déjeuner sur l'herbe", year: "1863", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Edouard_Manet_-_Le_D%C3%A9jeuner_sur_l%27herbe_-_Google_Art_Project.jpg/1280px-Edouard_Manet_-_Le_D%C3%A9jeuner_sur_l%27herbe_-_Google_Art_Project.jpg" },
+      { title: "A Bar at the Folies-Bergère", year: "1882", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Edouard_Manet%2C_A_Bar_at_the_Folies-Berg%C3%A8re.jpg/1280px-Edouard_Manet%2C_A_Bar_at_the_Folies-Berg%C3%A8re.jpg" },
+      { title: "Berthe Morisot with a Bouquet of Violets", year: "1872", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Edouard_Manet_-_Berthe_Morisot_with_a_Bouquet_of_Violets_-_Google_Art_Project.jpg/600px-Edouard_Manet_-_Berthe_Morisot_with_a_Bouquet_of_Violets_-_Google_Art_Project.jpg" }
+    ]
+  },
+  {
+    name: "Claude Monet", era: "Impressionist",
+    quote: "I paint the same haystack forty times to understand light. One sitting with her and I already sense that I could spend years trying and still not catch the quality of what she carries.",
+    paintings: [
+      { title: "Water Lilies", year: "1906", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/1280px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg" },
+      { title: "Impression, Sunrise", year: "1872", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Monet_-_Impression%2C_Sunrise.jpg/1280px-Monet_-_Impression%2C_Sunrise.jpg" },
+      { title: "Haystacks", year: "1891", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Claude_Monet_-_Haystacks_%28Effect_of_Snow_and_Sun%29.jpg/1280px-Claude_Monet_-_Haystacks_%28Effect_of_Snow_and_Sun%29.jpg" },
+      { title: "Woman with a Parasol", year: "1875", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Claude_Monet_-_Woman_with_a_Parasol_-_Madame_Monet_and_Her_Son_-_Google_Art_Project.jpg/800px-Claude_Monet_-_Woman_with_a_Parasol_-_Madame_Monet_and_Her_Son_-_Google_Art_Project.jpg" }
+    ]
+  },
+  {
+    name: "Pierre-Auguste Renoir", era: "Impressionist",
+    quote: "Happiness is the hardest thing to paint convincingly. She makes it look effortless, and that effortlessness is the very thing I have chased my whole career.",
+    paintings: [
+      { title: "Luncheon of the Boating Party", year: "1880–1881", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Auguste_Renoir_-_Luncheon_of_the_Boating_Party_-_Google_Art_Project.jpg/1280px-Auguste_Renoir_-_Luncheon_of_the_Boating_Party_-_Google_Art_Project.jpg" },
+      { title: "Dance at Le Moulin de la Galette", year: "1876", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Pierre-Auguste_Renoir%2C_Le_Moulin_de_la_Galette.jpg/1280px-Pierre-Auguste_Renoir%2C_Le_Moulin_de_la_Galette.jpg" },
+      { title: "Two Sisters (On the Terrace)", year: "1881", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Pierre-Auguste_Renoir_-_Two_Sisters_%28On_the_Terrace%29_-_1982.410_-_Art_Institute_of_Chicago.jpg/800px-Pierre-Auguste_Renoir_-_Two_Sisters_%28On_the_Terrace%29_-_1982.410_-_Art_Institute_of_Chicago.jpg" },
+      { title: "La Grenouillère", year: "1869", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Pierre-Auguste_Renoir%2C_La_Grenouill%C3%A8re.jpg/1280px-Pierre-Auguste_Renoir%2C_La_Grenouill%C3%A8re.jpg" }
+    ]
+  },
+  {
+    name: "Edgar Degas", era: "Impressionist",
+    quote: "I am obsessed with the moment before performance, the body in the between. She is entirely in the between — mid-step, mid-smile, mid-thought. Perfectly caught by the lens, uncatchable in paint.",
+    paintings: [
+      { title: "The Dance Class", year: "1874", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Degas_-_La_classe_de_danse_de_monsieur_Perrot.jpg/800px-Degas_-_La_classe_de_danse_de_monsieur_Perrot.jpg" },
+      { title: "L'Absinthe", year: "1876", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Edgar_Degas_-_In_a_Caf%C3%A9_-_Google_Art_Project_2.jpg/800px-Edgar_Degas_-_In_a_Caf%C3%A9_-_Google_Art_Project_2.jpg" },
+      { title: "At the Races", year: "c. 1877–1880", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Edgar_Degas_-_At_the_Races_-_Google_Art_Project.jpg/1280px-Edgar_Degas_-_At_the_Races_-_Google_Art_Project.jpg" },
+      { title: "Blue Dancers", year: "c. 1897", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Edgar_Degas_-_Blue_Dancers.jpg/800px-Edgar_Degas_-_Blue_Dancers.jpg" }
+    ]
+  },
+  {
+    name: "Mary Cassatt", era: "Impressionist",
+    quote: "There is something in the tilt of her shoulders I recognize — a woman who moves through the world on her own terms. That is rarer, and more beautiful, than any posed elegance.",
+    paintings: [
+      { title: "The Child's Bath", year: "1893", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Mary_Cassatt_-_The_Child%27s_Bath_-_1893.jpg/600px-Mary_Cassatt_-_The_Child%27s_Bath_-_1893.jpg" },
+      { title: "In the Loge", year: "1878", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Mary_Cassatt_-_In_the_Loge.jpg/800px-Mary_Cassatt_-_In_the_Loge.jpg" },
+      { title: "Young Woman Sewing", year: "1880–1882", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Mary_Stevenson_Cassatt_-_Young_Woman_Sewing_in_a_Garden_-_Google_Art_Project.jpg/600px-Mary_Stevenson_Cassatt_-_Young_Woman_Sewing_in_a_Garden_-_Google_Art_Project.jpg" },
+      { title: "Mother About to Wash Her Sleepy Child", year: "1880", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Mary_Cassatt_-_Mother_About_to_Wash_Her_Sleepy_Child_%281880%29.jpg/600px-Mary_Cassatt_-_Mother_About_to_Wash_Her_Sleepy_Child_%281880%29.jpg" }
+    ]
+  },
+  {
+    name: "Paul Cézanne", era: "Impressionist",
+    quote: "I care about structure, about the volume underneath appearance. What strikes me here is that the warmth is structural — it is not surface. It goes all the way in.",
+    paintings: [
+      { title: "The Card Players", year: "1892–1895", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Paul_C%C3%A9zanne_-_The_Card_Players_-_Google_Art_Project.jpg/1280px-Paul_C%C3%A9zanne_-_The_Card_Players_-_Google_Art_Project.jpg" },
+      { title: "Mont Sainte-Victoire", year: "c. 1902–1906", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Paul_C%C3%A9zanne_-_Mont_Sainte-Victoire_-_National_Gallery_of_Scotland.jpg/1280px-Paul_C%C3%A9zanne_-_Mont_Sainte-Victoire_-_National_Gallery_of_Scotland.jpg" },
+      { title: "The Large Bathers", year: "1895–1906", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Paul_Cezanne_The_Large_Bathers_Philadelphia.jpg/1280px-Paul_Cezanne_The_Large_Bathers_Philadelphia.jpg" },
+      { title: "Boy in a Red Waistcoat", year: "1888–1890", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Paul_C%C3%A9zanne_-_Boy_in_a_Red_Waistcoat_-_Google_Art_Project.jpg/600px-Paul_C%C3%A9zanne_-_Boy_in_a_Red_Waistcoat_-_Google_Art_Project.jpg" }
+    ]
+  },
+  {
+    name: "Gustav Klimt", era: "Modern",
+    quote: "Gold and ornament are my vocabulary, but she requires none of it. There is already so much decoration in the way her presence fills a frame. I would strip everything else away.",
+    paintings: [
+      { title: "The Kiss", year: "1907–1908", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg/800px-The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg" },
+      { title: "Portrait of Adele Bloch-Bauer I", year: "1907", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Klimt_-_Portrait_of_Adele_Bloch-Bauer_I.jpg/800px-Klimt_-_Portrait_of_Adele_Bloch-Bauer_I.jpg" },
+      { title: "Judith I", year: "1901", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Judith_%28Klimt%29.jpg/600px-Judith_%28Klimt%29.jpg" },
+      { title: "The Tree of Life", year: "1905–1909", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Tree_of_Life_by_klimt.jpg/800px-Tree_of_Life_by_klimt.jpg" }
+    ]
+  },
+  {
+    name: "Egon Schiele", era: "Modern",
+    quote: "I draw anxiety and desire and the nerve of things. She is different — there is a settledness in her I have rarely encountered, and I find myself wanting to understand how that is possible.",
+    paintings: [
+      { title: "Self-Portrait with Physalis", year: "1912", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Egon_Schiele_-_Selbstbildnis_mit_Physalis.jpg/600px-Egon_Schiele_-_Selbstbildnis_mit_Physalis.jpg" },
+      { title: "Reclining Woman", year: "1917", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Egon_Schiele_-_Liegende_Frau_%281917%29.jpg/1280px-Egon_Schiele_-_Liegende_Frau_%281917%29.jpg" },
+      { title: "Death and the Maiden", year: "1915", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Egon_Schiele_-_Tod_und_M%C3%A4dchen_%281915%29.jpg/800px-Egon_Schiele_-_Tod_und_M%C3%A4dchen_%281915%29.jpg" },
+      { title: "The Family", year: "1918", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Schiele_Egon_Die_Familie_1918.jpg/600px-Schiele_Egon_Die_Familie_1918.jpg" }
+    ]
+  },
+  {
+    name: "Henri Matisse", era: "Modern",
+    quote: "Color should express joy — not describe it, express it. She has understood this without ever touching a brush. Her whole presence is an act of pure color.",
+    paintings: [
+      { title: "The Dance", year: "1909–1910", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Matissedance.jpg/1280px-Matissedance.jpg" },
+      { title: "Woman with a Hat", year: "1905", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Matisse-Woman-with-a-Hat.jpg/600px-Matisse-Woman-with-a-Hat.jpg" },
+      { title: "The Joy of Life", year: "1905–1906", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Le_bonheur_de_vivre.jpg/1280px-Le_bonheur_de_vivre.jpg" },
+      { title: "Open Window at Collioure", year: "1905", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Henri-Matisse%2C_1905%2C_Fen%C3%AAtre_ouverte_%28Open_Window%2C_Collioure%29%2C_oil_on_canvas%2C_55.3_x_46_cm%2C_National_Gallery_of_Art%2C_Washington_D.C.jpg/800px-Henri-Matisse%2C_1905%2C_Fen%C3%AAtre_ouverte_%28Open_Window%2C_Collioure%29%2C_oil_on_canvas%2C_55.3_x_46_cm%2C_National_Gallery_of_Art%2C_Washington_D.C.jpg" }
+    ]
+  },
+  {
+    name: "Pablo Picasso", era: "Modern",
+    quote: "I have fractured faces to show multiple truths at once. But here is someone whose multiple truths are visible all at once, unbroken. How disarming.",
+    paintings: [
+      { title: "Guernica", year: "1937", url: "https://upload.wikimedia.org/wikipedia/en/7/74/PicassoGuernica.jpg" },
+      { title: "Les Demoiselles d'Avignon", year: "1907", url: "https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/Les_Demoiselles_d%27Avignon.jpg/800px-Les_Demoiselles_d%27Avignon.jpg" },
+      { title: "Weeping Woman", year: "1937", url: "https://upload.wikimedia.org/wikipedia/en/thumb/1/14/Picasso_The_Weeping_Woman_Tate_identifier_T05010_10.jpg/600px-Picasso_The_Weeping_Woman_Tate_identifier_T05010_10.jpg" },
+      { title: "Girl Before a Mirror", year: "1932", url: "https://upload.wikimedia.org/wikipedia/en/thumb/5/5c/Pablo_Picasso%2C_1932%2C_Girl_before_a_Mirror%2C_oil_on_canvas%2C_162.3_x_130.2_cm%2C_Museum_of_Modern_Art%2C_New_York.jpg/800px-Pablo_Picasso%2C_1932%2C_Girl_before_a_Mirror%2C_oil_on_canvas%2C_162.3_x_130.2_cm%2C_Museum_of_Modern_Art%2C_New_York.jpg" }
+    ]
+  },
+  {
+    name: "Amedeo Modigliani", era: "Modern",
+    quote: "I elongate my figures because I am trying to isolate the soul from the body's noise. In her, the two are already together, and simply seeing that feels like an answer I was looking for.",
+    paintings: [
+      { title: "Jeanne Hébuterne", year: "1919", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Modigliani_-_Jeanne_H%C3%A9buterne_%281919%29.jpg/600px-Modigliani_-_Jeanne_H%C3%A9buterne_%281919%29.jpg" },
+      { title: "Reclining Nude", year: "1917", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Modigliani_-_Reclining_Nude_from_the_Back_-_1917.jpg/1280px-Modigliani_-_Reclining_Nude_from_the_Back_-_1917.jpg" },
+      { title: "Portrait of Lunia Czechowska", year: "1918", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Amedeo_Modigliani_-_Portrait_of_Lunia_Czechowska_%281918%29.jpg/600px-Amedeo_Modigliani_-_Portrait_of_Lunia_Czechowska_%281918%29.jpg" },
+      { title: "Portrait of Paul Guillaume", year: "1916", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Amedeo_Modigliani%2C_1916%2C_Portrait_of_Paul_Guillaume_%28Novo_Pilota%29%2C_oil_on_cardboard%2C_105_x_75_cm%2C_Civico_Museo_d%27Arte_Contemporanea%2C_Milan.jpg/600px-Amedeo_Modigliani%2C_1916%2C_Portrait_of_Paul_Guillaume_%28Novo_Pilota%29%2C_oil_on_cardboard%2C_105_x_75_cm%2C_Civico_Museo_d%27Arte_Contemporanea%2C_Milan.jpg" }
+    ]
+  },
+  {
+    name: "Edward Hopper", era: "Modern",
+    quote: "My paintings are full of people who are alone even in company. She is the opposite — present, connected, emanating warmth outward. I would not know what to do with that in a room of mine.",
+    paintings: [
+      { title: "Nighthawks", year: "1942", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Nighthawks_by_Edward_Hopper_1942.jpg/1280px-Nighthawks_by_Edward_Hopper_1942.jpg" },
+      { title: "Morning Sun", year: "1952", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Edward_Hopper_Morning_Sun_1952.jpg/1280px-Edward_Hopper_Morning_Sun_1952.jpg" },
+      { title: "Automat", year: "1927", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Edward_Hopper_Automat_1927.jpg/800px-Edward_Hopper_Automat_1927.jpg" },
+      { title: "Room in New York", year: "1932", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Edward_Hopper%2C_Room_in_New_York%2C_1932.jpg/1280px-Edward_Hopper%2C_Room_in_New_York%2C_1932.jpg" }
+    ]
+  },
+  {
+    name: "Frida Kahlo", era: "Modern",
+    quote: "I painted myself to understand myself. She seems to already know. There is no searching in her face — only arrival. I envy and admire her for it equally.",
+    paintings: [
+      { title: "The Two Fridas", year: "1939", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/The_Two_Fridas.jpg/800px-The_Two_Fridas.jpg" },
+      { title: "Self-Portrait with Thorn Necklace", year: "1940", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Frida_Kahlo_-_Self-Portrait_with_Thorn_Necklace_and_Hummingbird_%281940%29.jpg/600px-Frida_Kahlo_-_Self-Portrait_with_Thorn_Necklace_and_Hummingbird_%281940%29.jpg" },
+      { title: "My Birth", year: "1932", url: "https://upload.wikimedia.org/wikipedia/en/thumb/9/93/Frida_Kahlo_%28My_Birth%29.jpg/800px-Frida_Kahlo_%28My_Birth%29.jpg" },
+      { title: "The Broken Column", year: "1944", url: "https://upload.wikimedia.org/wikipedia/en/thumb/9/9e/Broken_column.jpg/600px-Broken_column.jpg" }
+    ]
+  },
+  {
+    name: "Mark Rothko", era: "Modern",
+    quote: "I make paintings that people cry in front of — not from sadness but from recognition. What she has is the same thing: an encounter that goes past looking and becomes feeling.",
+    paintings: [
+      { title: "No. 61 (Rust and Blue)", year: "1953", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Mark_Rothko%2C_No._61_%28Rust_and_Blue%29_%281953%29.jpg/800px-Mark_Rothko%2C_No._61_%28Rust_and_Blue%29_%281953%29.jpg" },
+      { title: "Orange and Yellow", year: "1956", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Rothko_No_210.jpg/600px-Rothko_No_210.jpg" },
+      { title: "Black on Maroon", year: "1958", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Mark_Rothko_-_Black_on_Maroon_1958_-_Tate_Modern.jpg/800px-Mark_Rothko_-_Black_on_Maroon_1958_-_Tate_Modern.jpg" },
+      { title: "White Center", year: "1950", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Rothko_White_Center.jpg/600px-Rothko_White_Center.jpg" }
+    ]
+  },
+  {
+    name: "Andrew Wyeth", era: "Modern",
+    quote: "I paint ordinary things until they become extraordinary. She has already done this for herself — there is nothing posed here, and yet nothing is ordinary either. That is the rarest achievement.",
+    paintings: [
+      { title: "Christina's World", year: "1948", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Andrew_Wyeth_-_Christina%27s_World.jpg/1280px-Andrew_Wyeth_-_Christina%27s_World.jpg" },
+      { title: "Winter Fields", year: "1942", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Andrew_Wyeth_-_Winter_Fields_%281942%29.jpg/1280px-Andrew_Wyeth_-_Winter_Fields_%281942%29.jpg" },
+      { title: "Braids", year: "1979", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Wyeth_Braids.jpg/600px-Wyeth_Braids.jpg" },
+      { title: "Wind from the Sea", year: "1947", url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Andrew_Wyeth_Wind_From_the_Sea.jpg/1280px-Andrew_Wyeth_Wind_From_the_Sea.jpg" }
+    ]
+  }
+];
+
+const ERAS = ["Renaissance", "Baroque", "Romantic", "Impressionist", "Modern"];
+
+function buildHome() {
+  const container = document.getElementById('gallery-container');
+  let html = '';
+  let counter = 1;
+  ERAS.forEach(era => {
+    const artists = DATA.filter(d => d.era === era);
+    if (!artists.length) return;
+    html += `<div class="era-group"><div class="era-label">${era}</div><div class="artists-grid">`;
+    artists.forEach(artist => {
+      html += `
+        <div class="artist-card" onclick="openArtist('${artist.name.replace(/'/g,"\\'")}')">
+          <div class="card-number">${String(counter).padStart(2,'0')}</div>
+          <div class="card-name">${artist.name}</div>
+          <div class="card-era">${artist.era}</div>
+        </div>`;
+      counter++;
+    });
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+}
+
+function openArtist(name) {
+  const artist = DATA.find(d => d.name === name);
+  if (!artist) return;
+
+  document.getElementById('nav-name').textContent = artist.name;
+  document.getElementById('detail-era').textContent = artist.era;
+
+  const nameParts = artist.name.split(' ');
+  const last = nameParts.pop();
+  document.getElementById('detail-name').innerHTML = `${nameParts.join(' ')} <em>${last}</em>`;
+
+  document.getElementById('detail-quote').textContent = artist.quote;
+  document.getElementById('detail-attr').textContent = `— ${artist.name}`;
+
+  const paintingsEl = document.getElementById('detail-paintings');
+  paintingsEl.innerHTML = artist.paintings.map(p => `
+    <div class="painting-item" onclick="openLightbox('${p.url.replace(/'/g,"\\'")}','${p.title.replace(/'/g,"\\'")} · ${p.year}')">
+      <div class="painting-img-wrap">
+        <img src="${p.url}" alt="${p.title}" loading="lazy" onerror="this.parentElement.style.background='#e8e4de'">
+      </div>
+      <div class="painting-caption">
+        <div class="painting-title">${p.title}</div>
+        <div class="painting-year">${p.year}</div>
+      </div>
+    </div>
+  `).join('');
+
+  const artistPage = document.getElementById('artist-page');
+  const homePage = document.getElementById('home-page');
+
+  homePage.classList.remove('active');
+  setTimeout(() => {
+    artistPage.classList.add('active');
+    artistPage.scrollTop = 0;
+    // re-trigger fade-up animations
+    const fadeEls = artistPage.querySelectorAll('.fade-up');
+    fadeEls.forEach(el => { el.style.animation = 'none'; el.offsetHeight; el.style.animation = ''; });
+  }, 300);
+}
+
+function goHome() {
+  const artistPage = document.getElementById('artist-page');
+  const homePage = document.getElementById('home-page');
+  artistPage.classList.remove('active');
+  setTimeout(() => {
+    homePage.classList.add('active');
+  }, 300);
+}
+
+function openLightbox(url, caption) {
+  document.getElementById('lightbox-img').src = url;
+  document.getElementById('lightbox-caption').textContent = caption;
+  document.getElementById('lightbox').classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+});
+
+buildHome();
+</script>
+</body>
+</html>
